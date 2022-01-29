@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { EventService } from './service/event.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,12 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'ang-basic-practice006-routing';
+
+  constructor(
+    private eventService: EventService
+  ) {
+  }
+
+  ngOnInit(): void {
+    }
 }
