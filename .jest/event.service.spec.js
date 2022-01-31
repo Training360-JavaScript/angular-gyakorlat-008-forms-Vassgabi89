@@ -42199,16 +42199,18 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
       return this.http.patch(`${this.eUrl}/${event.id}`, event);
     }
     create(event) {
+      console.log(`Adding id: ${event.id}`);
       return this.http.post(this.eUrl, event).pipe(catchError(this.handleError("create error")));
     }
     remove(event) {
       const id = typeof event === "number" ? event : event.id;
       const url = `${this.eUrl}/${id}`;
+      console.log(`Removing url: ${url}`);
       return this.http.delete(url).pipe(catchError(this.handleError("remove error")));
     }
     handleError(operation) {
+      console.log(operation);
       return (error3) => {
-        console.log(operation);
         console.log(JSON.stringify(HttpErrorResponse));
         return of(new Event());
       };

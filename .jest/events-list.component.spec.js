@@ -1635,10 +1635,10 @@
         const RESOLVED = true;
         const REJECTED = false;
         const REJECTED_NO_CATCH = 0;
-        function makeResolver(promise2, state2) {
+        function makeResolver(promise2, state) {
           return (v) => {
             try {
-              resolvePromise(promise2, state2, v);
+              resolvePromise(promise2, state, v);
             } catch (err) {
               resolvePromise(promise2, false, err);
             }
@@ -1658,7 +1658,7 @@
         };
         const TYPE_ERROR = "Promise resolved with itself";
         const CURRENT_TASK_TRACE_SYMBOL = __symbol__("currentTaskTrace");
-        function resolvePromise(promise2, state2, value) {
+        function resolvePromise(promise2, state, value) {
           const onceWrapper = once();
           if (promise2 === value) {
             throw new TypeError(TYPE_ERROR);
@@ -1675,28 +1675,28 @@
               })();
               return promise2;
             }
-            if (state2 !== REJECTED && value instanceof ZoneAwarePromise && value.hasOwnProperty(symbolState) && value.hasOwnProperty(symbolValue) && value[symbolState] !== UNRESOLVED) {
+            if (state !== REJECTED && value instanceof ZoneAwarePromise && value.hasOwnProperty(symbolState) && value.hasOwnProperty(symbolValue) && value[symbolState] !== UNRESOLVED) {
               clearRejectedNoCatch(value);
               resolvePromise(promise2, value[symbolState], value[symbolValue]);
-            } else if (state2 !== REJECTED && typeof then === "function") {
+            } else if (state !== REJECTED && typeof then === "function") {
               try {
-                then.call(value, onceWrapper(makeResolver(promise2, state2)), onceWrapper(makeResolver(promise2, false)));
+                then.call(value, onceWrapper(makeResolver(promise2, state)), onceWrapper(makeResolver(promise2, false)));
               } catch (err) {
                 onceWrapper(() => {
                   resolvePromise(promise2, false, err);
                 })();
               }
             } else {
-              promise2[symbolState] = state2;
+              promise2[symbolState] = state;
               const queue = promise2[symbolValue];
               promise2[symbolValue] = value;
               if (promise2[symbolFinally] === symbolFinally) {
-                if (state2 === RESOLVED) {
+                if (state === RESOLVED) {
                   promise2[symbolState] = promise2[symbolParentPromiseState];
                   promise2[symbolValue] = promise2[symbolParentPromiseValue];
                 }
               }
-              if (state2 === REJECTED && value instanceof Error) {
+              if (state === REJECTED && value instanceof Error) {
                 const trace = Zone2.currentTask && Zone2.currentTask.data && Zone2.currentTask.data[creationTrace2];
                 if (trace) {
                   ObjectDefineProperty2(value, CURRENT_TASK_TRACE_SYMBOL, { configurable: true, enumerable: false, writable: true, value: trace });
@@ -1705,7 +1705,7 @@
               for (let i = 0; i < queue.length; ) {
                 scheduleResolveOrReject(promise2, queue[i++], queue[i++], queue[i++], queue[i++]);
               }
-              if (queue.length == 0 && state2 == REJECTED) {
+              if (queue.length == 0 && state == REJECTED) {
                 promise2[symbolState] = REJECTED_NO_CATCH;
                 let uncaughtPromiseError = value;
                 try {
@@ -6615,14 +6615,14 @@
   function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplete) {
     return function(source, subscriber) {
       var hasState = hasSeed;
-      var state2 = seed;
+      var state = seed;
       var index = 0;
       source.subscribe(new OperatorSubscriber(subscriber, function(value) {
         var i = index++;
-        state2 = hasState ? accumulator(state2, value, i) : (hasState = true, value);
-        emitOnNext && subscriber.next(state2);
+        state = hasState ? accumulator(state, value, i) : (hasState = true, value);
+        emitOnNext && subscriber.next(state);
       }, emitBeforeComplete && function() {
-        hasState && subscriber.next(state2);
+        hasState && subscriber.next(state);
         subscriber.complete();
       }));
     };
@@ -9368,8 +9368,8 @@ Please check that 1) the type for the parameter at index ${index} is correct and
       const styleOffset = component.styles.length;
       styleUrls && styleUrls.forEach((styleUrl, index) => {
         styles.push("");
-        promises.push(cachedResourceResolve(styleUrl).then((style2) => {
-          styles[styleOffset + index] = style2;
+        promises.push(cachedResourceResolve(styleUrl).then((style) => {
+          styles[styleOffset + index] = style;
           styleUrls.splice(styleUrls.indexOf(styleUrl), 1);
           if (styleUrls.length == 0) {
             component.styleUrls = void 0;
@@ -12261,9 +12261,9 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         } else if (mode == 1) {
           classes = concatStringsWithSpace(classes, value);
         } else if (mode == 2) {
-          const style2 = value;
+          const style = value;
           const styleValue = attrs[++i];
-          styles = concatStringsWithSpace(styles, style2 + ": " + styleValue + ";");
+          styles = concatStringsWithSpace(styles, style + ": " + styleValue + ";");
         }
       }
     }
@@ -23740,8 +23740,8 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
     return { getUniqueId: getSeqNumberGenerator(), icus: /* @__PURE__ */ new Map() };
   }
   function wrap(symbol, index, contextId, closed) {
-    const state2 = closed ? "/" : "";
-    return wrapI18nPlaceholder(`${state2}${symbol}${index}`, contextId);
+    const state = closed ? "/" : "";
+    return wrapI18nPlaceholder(`${state}${symbol}${index}`, contextId);
   }
   function wrapTag(symbol, { index, ctx, isVoid }, closed) {
     return isVoid ? wrap(symbol, index, ctx) + wrap(symbol, index, ctx, true) : wrap(symbol, index, ctx, closed);
@@ -24605,8 +24605,8 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
   }
   function compileStyles(styles, selector, hostSelector) {
     const shadowCss = new ShadowCss();
-    return styles.map((style2) => {
-      return shadowCss.shimCssText(style2, selector, hostSelector);
+    return styles.map((style) => {
+      return shadowCss.shimCssText(style, selector, hostSelector);
     });
   }
   function convertToR3QueryMetadata2(facade) {
@@ -33163,12 +33163,12 @@ ${ctx.toSourceMapGenerator(sourceUrl, headerLines).toJsComment()}`;
             this.file = fileOrCursor.file;
             this.input = fileOrCursor.input;
             this.end = fileOrCursor.end;
-            const state2 = fileOrCursor.state;
+            const state = fileOrCursor.state;
             this.state = {
-              peek: state2.peek,
-              offset: state2.offset,
-              line: state2.line,
-              column: state2.column
+              peek: state.peek,
+              offset: state.offset,
+              line: state.line,
+              column: state.column
             };
           } else {
             if (!range) {
@@ -33225,23 +33225,23 @@ ${ctx.toSourceMapGenerator(sourceUrl, headerLines).toJsComment()}`;
         charAt(pos) {
           return this.input.charCodeAt(pos);
         }
-        advanceState(state2) {
-          if (state2.offset >= this.end) {
-            this.state = state2;
+        advanceState(state) {
+          if (state.offset >= this.end) {
+            this.state = state;
             throw new CursorError('Unexpected character "EOF"', this);
           }
-          const currentChar = this.charAt(state2.offset);
+          const currentChar = this.charAt(state.offset);
           if (currentChar === $LF) {
-            state2.line++;
-            state2.column = 0;
+            state.line++;
+            state.column = 0;
           } else if (!isNewLine(currentChar)) {
-            state2.column++;
+            state.column++;
           }
-          state2.offset++;
-          this.updatePeek(state2);
+          state.offset++;
+          this.updatePeek(state);
         }
-        updatePeek(state2) {
-          state2.peek = state2.offset >= this.end ? $EOF : this.charAt(state2.offset);
+        updatePeek(state) {
+          state.peek = state.offset >= this.end ? $EOF : this.charAt(state.offset);
         }
         locationFromCursor(cursor) {
           return new ParseLocation(cursor.file, cursor.state.offset, cursor.state.line, cursor.state.column);
@@ -36452,8 +36452,8 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
       const styleOffset = component.styles.length;
       styleUrls && styleUrls.forEach((styleUrl, index) => {
         styles.push("");
-        promises.push(cachedResourceResolve(styleUrl).then((style2) => {
-          styles[styleOffset + index] = style2;
+        promises.push(cachedResourceResolve(styleUrl).then((style) => {
+          styles[styleOffset + index] = style;
           styleUrls.splice(styleUrls.indexOf(styleUrl), 1);
           if (styleUrls.length == 0) {
             component.styleUrls = void 0;
@@ -38819,16 +38819,16 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         set pathname(newPath) {
           this.location.pathname = newPath;
         }
-        pushState(state2, title, url) {
+        pushState(state, title, url) {
           if (supportsState()) {
-            this._history.pushState(state2, title, url);
+            this._history.pushState(state, title, url);
           } else {
             this.location.hash = url;
           }
         }
-        replaceState(state2, title, url) {
+        replaceState(state, title, url) {
           if (supportsState()) {
-            this._history.replaceState(state2, title, url);
+            this._history.replaceState(state, title, url);
           } else {
             this.location.hash = url;
           }
@@ -38904,13 +38904,13 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
           const hash = this._platformLocation.hash;
           return hash && includeHash ? `${pathname}${hash}` : pathname;
         }
-        pushState(state2, title, url, queryParams) {
+        pushState(state, title, url, queryParams) {
           const externalUrl = this.prepareExternalUrl(url + normalizeQueryParams(queryParams));
-          this._platformLocation.pushState(state2, title, externalUrl);
+          this._platformLocation.pushState(state, title, externalUrl);
         }
-        replaceState(state2, title, url, queryParams) {
+        replaceState(state, title, url, queryParams) {
           const externalUrl = this.prepareExternalUrl(url + normalizeQueryParams(queryParams));
-          this._platformLocation.replaceState(state2, title, externalUrl);
+          this._platformLocation.replaceState(state, title, externalUrl);
         }
         forward() {
           this._platformLocation.forward();
@@ -38965,19 +38965,19 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
           const url = joinWithSlash(this._baseHref, internal);
           return url.length > 0 ? "#" + url : url;
         }
-        pushState(state2, title, path, queryParams) {
+        pushState(state, title, path, queryParams) {
           let url = this.prepareExternalUrl(path + normalizeQueryParams(queryParams));
           if (url.length == 0) {
             url = this._platformLocation.pathname;
           }
-          this._platformLocation.pushState(state2, title, url);
+          this._platformLocation.pushState(state, title, url);
         }
-        replaceState(state2, title, path, queryParams) {
+        replaceState(state, title, path, queryParams) {
           let url = this.prepareExternalUrl(path + normalizeQueryParams(queryParams));
           if (url.length == 0) {
             url = this._platformLocation.pathname;
           }
-          this._platformLocation.replaceState(state2, title, url);
+          this._platformLocation.replaceState(state, title, url);
         }
         forward() {
           this._platformLocation.forward();
@@ -39036,13 +39036,13 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
           }
           return this._platformStrategy.prepareExternalUrl(url);
         }
-        go(path, query = "", state2 = null) {
-          this._platformStrategy.pushState(state2, "", path, query);
-          this._notifyUrlChangeListeners(this.prepareExternalUrl(path + normalizeQueryParams(query)), state2);
+        go(path, query = "", state = null) {
+          this._platformStrategy.pushState(state, "", path, query);
+          this._notifyUrlChangeListeners(this.prepareExternalUrl(path + normalizeQueryParams(query)), state);
         }
-        replaceState(path, query = "", state2 = null) {
-          this._platformStrategy.replaceState(state2, "", path, query);
-          this._notifyUrlChangeListeners(this.prepareExternalUrl(path + normalizeQueryParams(query)), state2);
+        replaceState(path, query = "", state = null) {
+          this._platformStrategy.replaceState(state, "", path, query);
+          this._notifyUrlChangeListeners(this.prepareExternalUrl(path + normalizeQueryParams(query)), state);
         }
         forward() {
           this._platformStrategy.forward();
@@ -39061,8 +39061,8 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
             });
           }
         }
-        _notifyUrlChangeListeners(url = "", state2) {
-          this._urlChangeListeners.forEach((fn2) => fn2(url, state2));
+        _notifyUrlChangeListeners(url = "", state) {
+          this._urlChangeListeners.forEach((fn2) => fn2(url, state));
         }
         subscribe(onNext, onThrow, onReturn) {
           return this._subject.subscribe({ next: onNext, error: onThrow, complete: onReturn });
@@ -40354,12 +40354,12 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
   }
   function flattenStyles(compId, styles, target) {
     for (let i = 0; i < styles.length; i++) {
-      let style2 = styles[i];
-      if (Array.isArray(style2)) {
-        flattenStyles(compId, style2, target);
+      let style = styles[i];
+      if (Array.isArray(style)) {
+        flattenStyles(compId, style, target);
       } else {
-        style2 = style2.replace(COMPONENT_REGEX, compId);
-        target.push(style2);
+        style = style.replace(COMPONENT_REGEX, compId);
+        target.push(style);
       }
     }
     return target;
@@ -40647,10 +40647,10 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         }
         addStyles(styles) {
           const additions = /* @__PURE__ */ new Set();
-          styles.forEach((style2) => {
-            if (!this._stylesSet.has(style2)) {
-              this._stylesSet.add(style2);
-              additions.add(style2);
+          styles.forEach((style) => {
+            if (!this._stylesSet.has(style)) {
+              this._stylesSet.add(style);
+              additions.add(style);
             }
           });
           this.onStylesAdded(additions);
@@ -40674,9 +40674,9 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
           this._hostNodes.set(_doc.head, []);
         }
         _addStylesToHost(styles, host, styleNodes) {
-          styles.forEach((style2) => {
+          styles.forEach((style) => {
             const styleEl = this._doc.createElement("style");
-            styleEl.textContent = style2;
+            styleEl.textContent = style;
             styleNodes.push(host.appendChild(styleEl));
           });
         }
@@ -40858,18 +40858,18 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         removeClass(el, name) {
           el.classList.remove(name);
         }
-        setStyle(el, style2, value, flags) {
+        setStyle(el, style, value, flags) {
           if (flags & (RendererStyleFlags2.DashCase | RendererStyleFlags2.Important)) {
-            el.style.setProperty(style2, value, flags & RendererStyleFlags2.Important ? "important" : "");
+            el.style.setProperty(style, value, flags & RendererStyleFlags2.Important ? "important" : "");
           } else {
-            el.style[style2] = value;
+            el.style[style] = value;
           }
         }
-        removeStyle(el, style2, flags) {
+        removeStyle(el, style, flags) {
           if (flags & RendererStyleFlags2.DashCase) {
-            el.style.removeProperty(style2);
+            el.style.removeProperty(style);
           } else {
-            el.style[style2] = "";
+            el.style[style] = "";
           }
         }
         setProperty(el, name, value) {
@@ -43043,16 +43043,18 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
           return this.http.patch(`${this.eUrl}/${event.id}`, event);
         }
         create(event) {
+          console.log(`Adding id: ${event.id}`);
           return this.http.post(this.eUrl, event).pipe(catchError(this.handleError("create error")));
         }
         remove(event) {
           const id = typeof event === "number" ? event : event.id;
           const url = `${this.eUrl}/${id}`;
+          console.log(`Removing url: ${url}`);
           return this.http.delete(url).pipe(catchError(this.handleError("remove error")));
         }
         handleError(operation) {
+          console.log(operation);
           return (error3) => {
-            console.log(operation);
             console.log(JSON.stringify(HttpErrorResponse));
             return of(new Event());
           };
@@ -43369,1431 +43371,6 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
 \r
 </div>\r
 `;
-    }
-  });
-
-  // node_modules/@angular/animations/fesm2020/animations.mjs
-  function trigger(name, definitions) {
-    return { type: 7, name, definitions, options: {} };
-  }
-  function animate(timings, styles = null) {
-    return { type: 4, styles, timings };
-  }
-  function style(tokens) {
-    return { type: 6, styles: tokens, offset: null };
-  }
-  function state(name, styles, options) {
-    return { type: 0, name, styles, options };
-  }
-  function transition(stateChangeExpr, steps, options = null) {
-    return { type: 1, expr: stateChangeExpr, animation: steps, options };
-  }
-  var init_animations = __esm({
-    "node_modules/@angular/animations/fesm2020/animations.mjs"() {
-    }
-  });
-
-  // node_modules/ngx-toastr/fesm2020/ngx-toastr.mjs
-  var ToastContainerDirective, ToastContainerModule, ComponentPortal, BasePortalHost, ToastPackage, DefaultNoComponentGlobalConfig, TOAST_CONFIG, ToastRef, ToastInjector, DomPortalHost, OverlayRef, OverlayContainer, Overlay, ToastrService, Toast, DefaultGlobalConfig, ToastrModule, ToastrComponentlessModule, ToastNoAnimation, DefaultNoAnimationsGlobalConfig, ToastNoAnimationModule;
-  var init_ngx_toastr = __esm({
-    "node_modules/ngx-toastr/fesm2020/ngx-toastr.mjs"() {
-      init_core();
-      init_core();
-      init_animations();
-      init_esm5();
-      init_common();
-      init_common();
-      init_platform_browser();
-      ToastContainerDirective = class {
-        constructor(el) {
-          this.el = el;
-        }
-        getContainerElement() {
-          return this.el.nativeElement;
-        }
-      };
-      ToastContainerDirective.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastContainerDirective, deps: [{ token: ElementRef }], target: FactoryTarget.Directive });
-      ToastContainerDirective.\u0275dir = \u0275\u0275ngDeclareDirective({ minVersion: "12.0.0", version: "13.0.2", type: ToastContainerDirective, selector: "[toastContainer]", exportAs: ["toastContainer"], ngImport: core_exports });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastContainerDirective, decorators: [{
-        type: Directive,
-        args: [{
-          selector: "[toastContainer]",
-          exportAs: "toastContainer"
-        }]
-      }], ctorParameters: function() {
-        return [{ type: ElementRef }];
-      } });
-      ToastContainerModule = class {
-      };
-      ToastContainerModule.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastContainerModule, deps: [], target: FactoryTarget.NgModule });
-      ToastContainerModule.\u0275mod = \u0275\u0275ngDeclareNgModule({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastContainerModule, declarations: [ToastContainerDirective], exports: [ToastContainerDirective] });
-      ToastContainerModule.\u0275inj = \u0275\u0275ngDeclareInjector({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastContainerModule });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastContainerModule, decorators: [{
-        type: NgModule,
-        args: [{
-          declarations: [ToastContainerDirective],
-          exports: [ToastContainerDirective]
-        }]
-      }] });
-      ComponentPortal = class {
-        constructor(component, injector) {
-          this.component = component;
-          this.injector = injector;
-        }
-        attach(host, newestOnTop) {
-          this._attachedHost = host;
-          return host.attach(this, newestOnTop);
-        }
-        detach() {
-          const host = this._attachedHost;
-          if (host) {
-            this._attachedHost = void 0;
-            return host.detach();
-          }
-        }
-        get isAttached() {
-          return this._attachedHost != null;
-        }
-        setAttachedHost(host) {
-          this._attachedHost = host;
-        }
-      };
-      BasePortalHost = class {
-        attach(portal, newestOnTop) {
-          this._attachedPortal = portal;
-          return this.attachComponentPortal(portal, newestOnTop);
-        }
-        detach() {
-          if (this._attachedPortal) {
-            this._attachedPortal.setAttachedHost();
-          }
-          this._attachedPortal = void 0;
-          if (this._disposeFn) {
-            this._disposeFn();
-            this._disposeFn = void 0;
-          }
-        }
-        setDisposeFn(fn2) {
-          this._disposeFn = fn2;
-        }
-      };
-      ToastPackage = class {
-        constructor(toastId, config2, message, title, toastType, toastRef) {
-          this.toastId = toastId;
-          this.config = config2;
-          this.message = message;
-          this.title = title;
-          this.toastType = toastType;
-          this.toastRef = toastRef;
-          this._onTap = new Subject();
-          this._onAction = new Subject();
-          this.toastRef.afterClosed().subscribe(() => {
-            this._onAction.complete();
-            this._onTap.complete();
-          });
-        }
-        triggerTap() {
-          this._onTap.next();
-          if (this.config.tapToDismiss) {
-            this._onTap.complete();
-          }
-        }
-        onTap() {
-          return this._onTap.asObservable();
-        }
-        triggerAction(action) {
-          this._onAction.next(action);
-        }
-        onAction() {
-          return this._onAction.asObservable();
-        }
-      };
-      DefaultNoComponentGlobalConfig = {
-        maxOpened: 0,
-        autoDismiss: false,
-        newestOnTop: true,
-        preventDuplicates: false,
-        countDuplicates: false,
-        resetTimeoutOnDuplicate: false,
-        includeTitleDuplicates: false,
-        iconClasses: {
-          error: "toast-error",
-          info: "toast-info",
-          success: "toast-success",
-          warning: "toast-warning"
-        },
-        closeButton: false,
-        disableTimeOut: false,
-        timeOut: 5e3,
-        extendedTimeOut: 1e3,
-        enableHtml: false,
-        progressBar: false,
-        toastClass: "ngx-toastr",
-        positionClass: "toast-top-right",
-        titleClass: "toast-title",
-        messageClass: "toast-message",
-        easing: "ease-in",
-        easeTime: 300,
-        tapToDismiss: true,
-        onActivateTick: false,
-        progressAnimation: "decreasing",
-        payload: null
-      };
-      TOAST_CONFIG = new InjectionToken("ToastConfig");
-      ToastRef = class {
-        constructor(_overlayRef) {
-          this._overlayRef = _overlayRef;
-          this.duplicatesCount = 0;
-          this._afterClosed = new Subject();
-          this._activate = new Subject();
-          this._manualClose = new Subject();
-          this._resetTimeout = new Subject();
-          this._countDuplicate = new Subject();
-        }
-        manualClose() {
-          this._manualClose.next();
-          this._manualClose.complete();
-        }
-        manualClosed() {
-          return this._manualClose.asObservable();
-        }
-        timeoutReset() {
-          return this._resetTimeout.asObservable();
-        }
-        countDuplicate() {
-          return this._countDuplicate.asObservable();
-        }
-        close() {
-          this._overlayRef.detach();
-          this._afterClosed.next();
-          this._manualClose.next();
-          this._afterClosed.complete();
-          this._manualClose.complete();
-          this._activate.complete();
-          this._resetTimeout.complete();
-          this._countDuplicate.complete();
-        }
-        afterClosed() {
-          return this._afterClosed.asObservable();
-        }
-        isInactive() {
-          return this._activate.isStopped;
-        }
-        activate() {
-          this._activate.next();
-          this._activate.complete();
-        }
-        afterActivate() {
-          return this._activate.asObservable();
-        }
-        onDuplicate(resetTimeout, countDuplicate) {
-          if (resetTimeout) {
-            this._resetTimeout.next();
-          }
-          if (countDuplicate) {
-            this._countDuplicate.next(++this.duplicatesCount);
-          }
-        }
-      };
-      ToastInjector = class {
-        constructor(_toastPackage, _parentInjector) {
-          this._toastPackage = _toastPackage;
-          this._parentInjector = _parentInjector;
-        }
-        get(token, notFoundValue, flags) {
-          if (token === ToastPackage) {
-            return this._toastPackage;
-          }
-          return this._parentInjector.get(token, notFoundValue, flags);
-        }
-      };
-      DomPortalHost = class extends BasePortalHost {
-        constructor(_hostDomElement, _componentFactoryResolver, _appRef) {
-          super();
-          this._hostDomElement = _hostDomElement;
-          this._componentFactoryResolver = _componentFactoryResolver;
-          this._appRef = _appRef;
-        }
-        attachComponentPortal(portal, newestOnTop) {
-          const componentFactory = this._componentFactoryResolver.resolveComponentFactory(portal.component);
-          let componentRef;
-          componentRef = componentFactory.create(portal.injector);
-          this._appRef.attachView(componentRef.hostView);
-          this.setDisposeFn(() => {
-            this._appRef.detachView(componentRef.hostView);
-            componentRef.destroy();
-          });
-          if (newestOnTop) {
-            this._hostDomElement.insertBefore(this._getComponentRootNode(componentRef), this._hostDomElement.firstChild);
-          } else {
-            this._hostDomElement.appendChild(this._getComponentRootNode(componentRef));
-          }
-          return componentRef;
-        }
-        _getComponentRootNode(componentRef) {
-          return componentRef.hostView.rootNodes[0];
-        }
-      };
-      OverlayRef = class {
-        constructor(_portalHost) {
-          this._portalHost = _portalHost;
-        }
-        attach(portal, newestOnTop = true) {
-          return this._portalHost.attach(portal, newestOnTop);
-        }
-        detach() {
-          return this._portalHost.detach();
-        }
-      };
-      OverlayContainer = class {
-        constructor(_document2) {
-          this._document = _document2;
-        }
-        ngOnDestroy() {
-          if (this._containerElement && this._containerElement.parentNode) {
-            this._containerElement.parentNode.removeChild(this._containerElement);
-          }
-        }
-        getContainerElement() {
-          if (!this._containerElement) {
-            this._createContainer();
-          }
-          return this._containerElement;
-        }
-        _createContainer() {
-          const container = this._document.createElement("div");
-          container.classList.add("overlay-container");
-          this._document.body.appendChild(container);
-          this._containerElement = container;
-        }
-      };
-      OverlayContainer.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: OverlayContainer, deps: [{ token: DOCUMENT2 }], target: FactoryTarget.Injectable });
-      OverlayContainer.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: OverlayContainer, providedIn: "root" });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: OverlayContainer, decorators: [{
-        type: Injectable,
-        args: [{ providedIn: "root" }]
-      }], ctorParameters: function() {
-        return [{ type: void 0, decorators: [{
-          type: Inject,
-          args: [DOCUMENT2]
-        }] }];
-      } });
-      Overlay = class {
-        constructor(_overlayContainer, _componentFactoryResolver, _appRef, _document2) {
-          this._overlayContainer = _overlayContainer;
-          this._componentFactoryResolver = _componentFactoryResolver;
-          this._appRef = _appRef;
-          this._document = _document2;
-          this._paneElements = /* @__PURE__ */ new Map();
-        }
-        create(positionClass, overlayContainer) {
-          return this._createOverlayRef(this.getPaneElement(positionClass, overlayContainer));
-        }
-        getPaneElement(positionClass = "", overlayContainer) {
-          if (!this._paneElements.get(overlayContainer)) {
-            this._paneElements.set(overlayContainer, {});
-          }
-          if (!this._paneElements.get(overlayContainer)[positionClass]) {
-            this._paneElements.get(overlayContainer)[positionClass] = this._createPaneElement(positionClass, overlayContainer);
-          }
-          return this._paneElements.get(overlayContainer)[positionClass];
-        }
-        _createPaneElement(positionClass, overlayContainer) {
-          const pane = this._document.createElement("div");
-          pane.id = "toast-container";
-          pane.classList.add(positionClass);
-          pane.classList.add("toast-container");
-          if (!overlayContainer) {
-            this._overlayContainer.getContainerElement().appendChild(pane);
-          } else {
-            overlayContainer.getContainerElement().appendChild(pane);
-          }
-          return pane;
-        }
-        _createPortalHost(pane) {
-          return new DomPortalHost(pane, this._componentFactoryResolver, this._appRef);
-        }
-        _createOverlayRef(pane) {
-          return new OverlayRef(this._createPortalHost(pane));
-        }
-      };
-      Overlay.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: Overlay, deps: [{ token: OverlayContainer }, { token: ComponentFactoryResolver$1 }, { token: ApplicationRef }, { token: DOCUMENT2 }], target: FactoryTarget.Injectable });
-      Overlay.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: Overlay, providedIn: "root" });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: Overlay, decorators: [{
-        type: Injectable,
-        args: [{ providedIn: "root" }]
-      }], ctorParameters: function() {
-        return [{ type: OverlayContainer }, { type: ComponentFactoryResolver$1 }, { type: ApplicationRef }, { type: void 0, decorators: [{
-          type: Inject,
-          args: [DOCUMENT2]
-        }] }];
-      } });
-      ToastrService = class {
-        constructor(token, overlay, _injector, sanitizer, ngZone) {
-          this.overlay = overlay;
-          this._injector = _injector;
-          this.sanitizer = sanitizer;
-          this.ngZone = ngZone;
-          this.currentlyActive = 0;
-          this.toasts = [];
-          this.index = 0;
-          this.toastrConfig = {
-            ...token.default,
-            ...token.config
-          };
-          if (token.config.iconClasses) {
-            this.toastrConfig.iconClasses = {
-              ...token.default.iconClasses,
-              ...token.config.iconClasses
-            };
-          }
-        }
-        show(message, title, override = {}, type = "") {
-          return this._preBuildNotification(type, message, title, this.applyConfig(override));
-        }
-        success(message, title, override = {}) {
-          const type = this.toastrConfig.iconClasses.success || "";
-          return this._preBuildNotification(type, message, title, this.applyConfig(override));
-        }
-        error(message, title, override = {}) {
-          const type = this.toastrConfig.iconClasses.error || "";
-          return this._preBuildNotification(type, message, title, this.applyConfig(override));
-        }
-        info(message, title, override = {}) {
-          const type = this.toastrConfig.iconClasses.info || "";
-          return this._preBuildNotification(type, message, title, this.applyConfig(override));
-        }
-        warning(message, title, override = {}) {
-          const type = this.toastrConfig.iconClasses.warning || "";
-          return this._preBuildNotification(type, message, title, this.applyConfig(override));
-        }
-        clear(toastId) {
-          for (const toast of this.toasts) {
-            if (toastId !== void 0) {
-              if (toast.toastId === toastId) {
-                toast.toastRef.manualClose();
-                return;
-              }
-            } else {
-              toast.toastRef.manualClose();
-            }
-          }
-        }
-        remove(toastId) {
-          const found = this._findToast(toastId);
-          if (!found) {
-            return false;
-          }
-          found.activeToast.toastRef.close();
-          this.toasts.splice(found.index, 1);
-          this.currentlyActive = this.currentlyActive - 1;
-          if (!this.toastrConfig.maxOpened || !this.toasts.length) {
-            return false;
-          }
-          if (this.currentlyActive < this.toastrConfig.maxOpened && this.toasts[this.currentlyActive]) {
-            const p = this.toasts[this.currentlyActive].toastRef;
-            if (!p.isInactive()) {
-              this.currentlyActive = this.currentlyActive + 1;
-              p.activate();
-            }
-          }
-          return true;
-        }
-        findDuplicate(title = "", message = "", resetOnDuplicate, countDuplicates) {
-          const { includeTitleDuplicates } = this.toastrConfig;
-          for (const toast of this.toasts) {
-            const hasDuplicateTitle = includeTitleDuplicates && toast.title === title;
-            if ((!includeTitleDuplicates || hasDuplicateTitle) && toast.message === message) {
-              toast.toastRef.onDuplicate(resetOnDuplicate, countDuplicates);
-              return toast;
-            }
-          }
-          return null;
-        }
-        applyConfig(override = {}) {
-          return { ...this.toastrConfig, ...override };
-        }
-        _findToast(toastId) {
-          for (let i = 0; i < this.toasts.length; i++) {
-            if (this.toasts[i].toastId === toastId) {
-              return { index: i, activeToast: this.toasts[i] };
-            }
-          }
-          return null;
-        }
-        _preBuildNotification(toastType, message, title, config2) {
-          if (config2.onActivateTick) {
-            return this.ngZone.run(() => this._buildNotification(toastType, message, title, config2));
-          }
-          return this._buildNotification(toastType, message, title, config2);
-        }
-        _buildNotification(toastType, message, title, config2) {
-          if (!config2.toastComponent) {
-            throw new Error("toastComponent required");
-          }
-          const duplicate = this.findDuplicate(title, message, this.toastrConfig.resetTimeoutOnDuplicate && config2.timeOut > 0, this.toastrConfig.countDuplicates);
-          if ((this.toastrConfig.includeTitleDuplicates && title || message) && this.toastrConfig.preventDuplicates && duplicate !== null) {
-            return duplicate;
-          }
-          this.previousToastMessage = message;
-          let keepInactive = false;
-          if (this.toastrConfig.maxOpened && this.currentlyActive >= this.toastrConfig.maxOpened) {
-            keepInactive = true;
-            if (this.toastrConfig.autoDismiss) {
-              this.clear(this.toasts[0].toastId);
-            }
-          }
-          const overlayRef = this.overlay.create(config2.positionClass, this.overlayContainer);
-          this.index = this.index + 1;
-          let sanitizedMessage = message;
-          if (message && config2.enableHtml) {
-            sanitizedMessage = this.sanitizer.sanitize(SecurityContext.HTML, message);
-          }
-          const toastRef = new ToastRef(overlayRef);
-          const toastPackage = new ToastPackage(this.index, config2, sanitizedMessage, title, toastType, toastRef);
-          const toastInjector = new ToastInjector(toastPackage, this._injector);
-          const component = new ComponentPortal(config2.toastComponent, toastInjector);
-          const portal = overlayRef.attach(component, this.toastrConfig.newestOnTop);
-          toastRef.componentInstance = portal.instance;
-          const ins = {
-            toastId: this.index,
-            title: title || "",
-            message: message || "",
-            toastRef,
-            onShown: toastRef.afterActivate(),
-            onHidden: toastRef.afterClosed(),
-            onTap: toastPackage.onTap(),
-            onAction: toastPackage.onAction(),
-            portal
-          };
-          if (!keepInactive) {
-            this.currentlyActive = this.currentlyActive + 1;
-            setTimeout(() => {
-              ins.toastRef.activate();
-            });
-          }
-          this.toasts.push(ins);
-          return ins;
-        }
-      };
-      ToastrService.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrService, deps: [{ token: TOAST_CONFIG }, { token: Overlay }, { token: Injector }, { token: DomSanitizer }, { token: NgZone }], target: FactoryTarget.Injectable });
-      ToastrService.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrService, providedIn: "root" });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrService, decorators: [{
-        type: Injectable,
-        args: [{ providedIn: "root" }]
-      }], ctorParameters: function() {
-        return [{ type: void 0, decorators: [{
-          type: Inject,
-          args: [TOAST_CONFIG]
-        }] }, { type: Overlay }, { type: Injector }, { type: DomSanitizer }, { type: NgZone }];
-      } });
-      Toast = class {
-        constructor(toastrService, toastPackage, ngZone) {
-          this.toastrService = toastrService;
-          this.toastPackage = toastPackage;
-          this.ngZone = ngZone;
-          this.width = -1;
-          this.toastClasses = "";
-          this.state = {
-            value: "inactive",
-            params: {
-              easeTime: this.toastPackage.config.easeTime,
-              easing: "ease-in"
-            }
-          };
-          this.message = toastPackage.message;
-          this.title = toastPackage.title;
-          this.options = toastPackage.config;
-          this.originalTimeout = toastPackage.config.timeOut;
-          this.toastClasses = `${toastPackage.toastType} ${toastPackage.config.toastClass}`;
-          this.sub = toastPackage.toastRef.afterActivate().subscribe(() => {
-            this.activateToast();
-          });
-          this.sub1 = toastPackage.toastRef.manualClosed().subscribe(() => {
-            this.remove();
-          });
-          this.sub2 = toastPackage.toastRef.timeoutReset().subscribe(() => {
-            this.resetTimeout();
-          });
-          this.sub3 = toastPackage.toastRef.countDuplicate().subscribe((count) => {
-            this.duplicatesCount = count;
-          });
-        }
-        get displayStyle() {
-          if (this.state.value === "inactive") {
-            return "none";
-          }
-          return;
-        }
-        ngOnDestroy() {
-          this.sub.unsubscribe();
-          this.sub1.unsubscribe();
-          this.sub2.unsubscribe();
-          this.sub3.unsubscribe();
-          clearInterval(this.intervalId);
-          clearTimeout(this.timeout);
-        }
-        activateToast() {
-          this.state = { ...this.state, value: "active" };
-          if (!(this.options.disableTimeOut === true || this.options.disableTimeOut === "timeOut") && this.options.timeOut) {
-            this.outsideTimeout(() => this.remove(), this.options.timeOut);
-            this.hideTime = new Date().getTime() + this.options.timeOut;
-            if (this.options.progressBar) {
-              this.outsideInterval(() => this.updateProgress(), 10);
-            }
-          }
-        }
-        updateProgress() {
-          if (this.width === 0 || this.width === 100 || !this.options.timeOut) {
-            return;
-          }
-          const now = new Date().getTime();
-          const remaining = this.hideTime - now;
-          this.width = remaining / this.options.timeOut * 100;
-          if (this.options.progressAnimation === "increasing") {
-            this.width = 100 - this.width;
-          }
-          if (this.width <= 0) {
-            this.width = 0;
-          }
-          if (this.width >= 100) {
-            this.width = 100;
-          }
-        }
-        resetTimeout() {
-          clearTimeout(this.timeout);
-          clearInterval(this.intervalId);
-          this.state = { ...this.state, value: "active" };
-          this.outsideTimeout(() => this.remove(), this.originalTimeout);
-          this.options.timeOut = this.originalTimeout;
-          this.hideTime = new Date().getTime() + (this.options.timeOut || 0);
-          this.width = -1;
-          if (this.options.progressBar) {
-            this.outsideInterval(() => this.updateProgress(), 10);
-          }
-        }
-        remove() {
-          if (this.state.value === "removed") {
-            return;
-          }
-          clearTimeout(this.timeout);
-          this.state = { ...this.state, value: "removed" };
-          this.outsideTimeout(() => this.toastrService.remove(this.toastPackage.toastId), +this.toastPackage.config.easeTime);
-        }
-        tapToast() {
-          if (this.state.value === "removed") {
-            return;
-          }
-          this.toastPackage.triggerTap();
-          if (this.options.tapToDismiss) {
-            this.remove();
-          }
-        }
-        stickAround() {
-          if (this.state.value === "removed") {
-            return;
-          }
-          clearTimeout(this.timeout);
-          this.options.timeOut = 0;
-          this.hideTime = 0;
-          clearInterval(this.intervalId);
-          this.width = 0;
-        }
-        delayedHideToast() {
-          if (this.options.disableTimeOut === true || this.options.disableTimeOut === "extendedTimeOut" || this.options.extendedTimeOut === 0 || this.state.value === "removed") {
-            return;
-          }
-          this.outsideTimeout(() => this.remove(), this.options.extendedTimeOut);
-          this.options.timeOut = this.options.extendedTimeOut;
-          this.hideTime = new Date().getTime() + (this.options.timeOut || 0);
-          this.width = -1;
-          if (this.options.progressBar) {
-            this.outsideInterval(() => this.updateProgress(), 10);
-          }
-        }
-        outsideTimeout(func, timeout) {
-          if (this.ngZone) {
-            this.ngZone.runOutsideAngular(() => this.timeout = setTimeout(() => this.runInsideAngular(func), timeout));
-          } else {
-            this.timeout = setTimeout(() => func(), timeout);
-          }
-        }
-        outsideInterval(func, timeout) {
-          if (this.ngZone) {
-            this.ngZone.runOutsideAngular(() => this.intervalId = setInterval(() => this.runInsideAngular(func), timeout));
-          } else {
-            this.intervalId = setInterval(() => func(), timeout);
-          }
-        }
-        runInsideAngular(func) {
-          if (this.ngZone) {
-            this.ngZone.run(() => func());
-          } else {
-            func();
-          }
-        }
-      };
-      Toast.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: Toast, deps: [{ token: ToastrService }, { token: ToastPackage }, { token: NgZone }], target: FactoryTarget.Component });
-      Toast.\u0275cmp = \u0275\u0275ngDeclareComponent({ minVersion: "12.0.0", version: "13.0.2", type: Toast, selector: "[toast-component]", host: { listeners: { "click": "tapToast()", "mouseenter": "stickAround()", "mouseleave": "delayedHideToast()" }, properties: { "class": "this.toastClasses", "@flyInOut": "this.state", "style.display": "this.displayStyle" } }, ngImport: core_exports, template: `
-  <button *ngIf="options.closeButton" (click)="remove()" type="button" class="toast-close-button" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-  <div *ngIf="title" [class]="options.titleClass" [attr.aria-label]="title">
-    {{ title }} <ng-container *ngIf="duplicatesCount">[{{ duplicatesCount + 1 }}]</ng-container>
-  </div>
-  <div *ngIf="message && options.enableHtml" role="alertdialog" aria-live="polite"
-    [class]="options.messageClass" [innerHTML]="message">
-  </div>
-  <div *ngIf="message && !options.enableHtml" role="alertdialog" aria-live="polite"
-    [class]="options.messageClass" [attr.aria-label]="message">
-    {{ message }}
-  </div>
-  <div *ngIf="options.progressBar">
-    <div class="toast-progress" [style.width]="width + '%'"></div>
-  </div>
-  `, isInline: true, directives: [{ type: NgIf, selector: "[ngIf]", inputs: ["ngIf", "ngIfThen", "ngIfElse"] }], animations: [
-        trigger("flyInOut", [
-          state("inactive", style({ opacity: 0 })),
-          state("active", style({ opacity: 1 })),
-          state("removed", style({ opacity: 0 })),
-          transition("inactive => active", animate("{{ easeTime }}ms {{ easing }}")),
-          transition("active => removed", animate("{{ easeTime }}ms {{ easing }}"))
-        ])
-      ] });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: Toast, decorators: [{
-        type: Component,
-        args: [{
-          selector: "[toast-component]",
-          template: `
-  <button *ngIf="options.closeButton" (click)="remove()" type="button" class="toast-close-button" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-  <div *ngIf="title" [class]="options.titleClass" [attr.aria-label]="title">
-    {{ title }} <ng-container *ngIf="duplicatesCount">[{{ duplicatesCount + 1 }}]</ng-container>
-  </div>
-  <div *ngIf="message && options.enableHtml" role="alertdialog" aria-live="polite"
-    [class]="options.messageClass" [innerHTML]="message">
-  </div>
-  <div *ngIf="message && !options.enableHtml" role="alertdialog" aria-live="polite"
-    [class]="options.messageClass" [attr.aria-label]="message">
-    {{ message }}
-  </div>
-  <div *ngIf="options.progressBar">
-    <div class="toast-progress" [style.width]="width + '%'"></div>
-  </div>
-  `,
-          animations: [
-            trigger("flyInOut", [
-              state("inactive", style({ opacity: 0 })),
-              state("active", style({ opacity: 1 })),
-              state("removed", style({ opacity: 0 })),
-              transition("inactive => active", animate("{{ easeTime }}ms {{ easing }}")),
-              transition("active => removed", animate("{{ easeTime }}ms {{ easing }}"))
-            ])
-          ],
-          preserveWhitespaces: false
-        }]
-      }], ctorParameters: function() {
-        return [{ type: ToastrService }, { type: ToastPackage }, { type: NgZone }];
-      }, propDecorators: { toastClasses: [{
-        type: HostBinding,
-        args: ["class"]
-      }], state: [{
-        type: HostBinding,
-        args: ["@flyInOut"]
-      }], displayStyle: [{
-        type: HostBinding,
-        args: ["style.display"]
-      }], tapToast: [{
-        type: HostListener,
-        args: ["click"]
-      }], stickAround: [{
-        type: HostListener,
-        args: ["mouseenter"]
-      }], delayedHideToast: [{
-        type: HostListener,
-        args: ["mouseleave"]
-      }] } });
-      DefaultGlobalConfig = {
-        ...DefaultNoComponentGlobalConfig,
-        toastComponent: Toast
-      };
-      ToastrModule = class {
-        static forRoot(config2 = {}) {
-          return {
-            ngModule: ToastrModule,
-            providers: [
-              {
-                provide: TOAST_CONFIG,
-                useValue: {
-                  default: DefaultGlobalConfig,
-                  config: config2
-                }
-              }
-            ]
-          };
-        }
-      };
-      ToastrModule.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrModule, deps: [], target: FactoryTarget.NgModule });
-      ToastrModule.\u0275mod = \u0275\u0275ngDeclareNgModule({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrModule, declarations: [Toast], imports: [CommonModule], exports: [Toast] });
-      ToastrModule.\u0275inj = \u0275\u0275ngDeclareInjector({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrModule, imports: [[CommonModule]] });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrModule, decorators: [{
-        type: NgModule,
-        args: [{
-          imports: [CommonModule],
-          declarations: [Toast],
-          exports: [Toast],
-          entryComponents: [Toast]
-        }]
-      }] });
-      ToastrComponentlessModule = class {
-        static forRoot(config2 = {}) {
-          return {
-            ngModule: ToastrModule,
-            providers: [
-              {
-                provide: TOAST_CONFIG,
-                useValue: {
-                  default: DefaultNoComponentGlobalConfig,
-                  config: config2
-                }
-              }
-            ]
-          };
-        }
-      };
-      ToastrComponentlessModule.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrComponentlessModule, deps: [], target: FactoryTarget.NgModule });
-      ToastrComponentlessModule.\u0275mod = \u0275\u0275ngDeclareNgModule({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrComponentlessModule, imports: [CommonModule] });
-      ToastrComponentlessModule.\u0275inj = \u0275\u0275ngDeclareInjector({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrComponentlessModule, imports: [[CommonModule]] });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastrComponentlessModule, decorators: [{
-        type: NgModule,
-        args: [{
-          imports: [CommonModule]
-        }]
-      }] });
-      ToastNoAnimation = class {
-        constructor(toastrService, toastPackage, appRef) {
-          this.toastrService = toastrService;
-          this.toastPackage = toastPackage;
-          this.appRef = appRef;
-          this.width = -1;
-          this.toastClasses = "";
-          this.state = "inactive";
-          this.message = toastPackage.message;
-          this.title = toastPackage.title;
-          this.options = toastPackage.config;
-          this.originalTimeout = toastPackage.config.timeOut;
-          this.toastClasses = `${toastPackage.toastType} ${toastPackage.config.toastClass}`;
-          this.sub = toastPackage.toastRef.afterActivate().subscribe(() => {
-            this.activateToast();
-          });
-          this.sub1 = toastPackage.toastRef.manualClosed().subscribe(() => {
-            this.remove();
-          });
-          this.sub2 = toastPackage.toastRef.timeoutReset().subscribe(() => {
-            this.resetTimeout();
-          });
-          this.sub3 = toastPackage.toastRef.countDuplicate().subscribe((count) => {
-            this.duplicatesCount = count;
-          });
-        }
-        get displayStyle() {
-          if (this.state === "inactive") {
-            return "none";
-          }
-        }
-        ngOnDestroy() {
-          this.sub.unsubscribe();
-          this.sub1.unsubscribe();
-          this.sub2.unsubscribe();
-          this.sub3.unsubscribe();
-          clearInterval(this.intervalId);
-          clearTimeout(this.timeout);
-        }
-        activateToast() {
-          this.state = "active";
-          if (!(this.options.disableTimeOut === true || this.options.disableTimeOut === "timeOut") && this.options.timeOut) {
-            this.timeout = setTimeout(() => {
-              this.remove();
-            }, this.options.timeOut);
-            this.hideTime = new Date().getTime() + this.options.timeOut;
-            if (this.options.progressBar) {
-              this.intervalId = setInterval(() => this.updateProgress(), 10);
-            }
-          }
-          if (this.options.onActivateTick) {
-            this.appRef.tick();
-          }
-        }
-        updateProgress() {
-          if (this.width === 0 || this.width === 100 || !this.options.timeOut) {
-            return;
-          }
-          const now = new Date().getTime();
-          const remaining = this.hideTime - now;
-          this.width = remaining / this.options.timeOut * 100;
-          if (this.options.progressAnimation === "increasing") {
-            this.width = 100 - this.width;
-          }
-          if (this.width <= 0) {
-            this.width = 0;
-          }
-          if (this.width >= 100) {
-            this.width = 100;
-          }
-        }
-        resetTimeout() {
-          clearTimeout(this.timeout);
-          clearInterval(this.intervalId);
-          this.state = "active";
-          this.options.timeOut = this.originalTimeout;
-          this.timeout = setTimeout(() => this.remove(), this.originalTimeout);
-          this.hideTime = new Date().getTime() + (this.originalTimeout || 0);
-          this.width = -1;
-          if (this.options.progressBar) {
-            this.intervalId = setInterval(() => this.updateProgress(), 10);
-          }
-        }
-        remove() {
-          if (this.state === "removed") {
-            return;
-          }
-          clearTimeout(this.timeout);
-          this.state = "removed";
-          this.timeout = setTimeout(() => this.toastrService.remove(this.toastPackage.toastId));
-        }
-        tapToast() {
-          if (this.state === "removed") {
-            return;
-          }
-          this.toastPackage.triggerTap();
-          if (this.options.tapToDismiss) {
-            this.remove();
-          }
-        }
-        stickAround() {
-          if (this.state === "removed") {
-            return;
-          }
-          clearTimeout(this.timeout);
-          this.options.timeOut = 0;
-          this.hideTime = 0;
-          clearInterval(this.intervalId);
-          this.width = 0;
-        }
-        delayedHideToast() {
-          if (this.options.disableTimeOut === true || this.options.disableTimeOut === "extendedTimeOut" || this.options.extendedTimeOut === 0 || this.state === "removed") {
-            return;
-          }
-          this.timeout = setTimeout(() => this.remove(), this.options.extendedTimeOut);
-          this.options.timeOut = this.options.extendedTimeOut;
-          this.hideTime = new Date().getTime() + (this.options.timeOut || 0);
-          this.width = -1;
-          if (this.options.progressBar) {
-            this.intervalId = setInterval(() => this.updateProgress(), 10);
-          }
-        }
-      };
-      ToastNoAnimation.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastNoAnimation, deps: [{ token: ToastrService }, { token: ToastPackage }, { token: ApplicationRef }], target: FactoryTarget.Component });
-      ToastNoAnimation.\u0275cmp = \u0275\u0275ngDeclareComponent({ minVersion: "12.0.0", version: "13.0.2", type: ToastNoAnimation, selector: "[toast-component]", host: { listeners: { "click": "tapToast()", "mouseenter": "stickAround()", "mouseleave": "delayedHideToast()" }, properties: { "class": "this.toastClasses", "style.display": "this.displayStyle" } }, ngImport: core_exports, template: `
-  <button *ngIf="options.closeButton" (click)="remove()" type="button" class="toast-close-button" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-  <div *ngIf="title" [class]="options.titleClass" [attr.aria-label]="title">
-    {{ title }} <ng-container *ngIf="duplicatesCount">[{{ duplicatesCount + 1 }}]</ng-container>
-  </div>
-  <div *ngIf="message && options.enableHtml" role="alert" aria-live="polite"
-    [class]="options.messageClass" [innerHTML]="message">
-  </div>
-  <div *ngIf="message && !options.enableHtml" role="alert" aria-live="polite"
-    [class]="options.messageClass" [attr.aria-label]="message">
-    {{ message }}
-  </div>
-  <div *ngIf="options.progressBar">
-    <div class="toast-progress" [style.width]="width + '%'"></div>
-  </div>
-  `, isInline: true, directives: [{ type: NgIf, selector: "[ngIf]", inputs: ["ngIf", "ngIfThen", "ngIfElse"] }] });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastNoAnimation, decorators: [{
-        type: Component,
-        args: [{
-          selector: "[toast-component]",
-          template: `
-  <button *ngIf="options.closeButton" (click)="remove()" type="button" class="toast-close-button" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-  <div *ngIf="title" [class]="options.titleClass" [attr.aria-label]="title">
-    {{ title }} <ng-container *ngIf="duplicatesCount">[{{ duplicatesCount + 1 }}]</ng-container>
-  </div>
-  <div *ngIf="message && options.enableHtml" role="alert" aria-live="polite"
-    [class]="options.messageClass" [innerHTML]="message">
-  </div>
-  <div *ngIf="message && !options.enableHtml" role="alert" aria-live="polite"
-    [class]="options.messageClass" [attr.aria-label]="message">
-    {{ message }}
-  </div>
-  <div *ngIf="options.progressBar">
-    <div class="toast-progress" [style.width]="width + '%'"></div>
-  </div>
-  `
-        }]
-      }], ctorParameters: function() {
-        return [{ type: ToastrService }, { type: ToastPackage }, { type: ApplicationRef }];
-      }, propDecorators: { toastClasses: [{
-        type: HostBinding,
-        args: ["class"]
-      }], displayStyle: [{
-        type: HostBinding,
-        args: ["style.display"]
-      }], tapToast: [{
-        type: HostListener,
-        args: ["click"]
-      }], stickAround: [{
-        type: HostListener,
-        args: ["mouseenter"]
-      }], delayedHideToast: [{
-        type: HostListener,
-        args: ["mouseleave"]
-      }] } });
-      DefaultNoAnimationsGlobalConfig = {
-        ...DefaultNoComponentGlobalConfig,
-        toastComponent: ToastNoAnimation
-      };
-      ToastNoAnimationModule = class {
-        static forRoot(config2 = {}) {
-          return {
-            ngModule: ToastNoAnimationModule,
-            providers: [
-              {
-                provide: TOAST_CONFIG,
-                useValue: {
-                  default: DefaultNoAnimationsGlobalConfig,
-                  config: config2
-                }
-              }
-            ]
-          };
-        }
-      };
-      ToastNoAnimationModule.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastNoAnimationModule, deps: [], target: FactoryTarget.NgModule });
-      ToastNoAnimationModule.\u0275mod = \u0275\u0275ngDeclareNgModule({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastNoAnimationModule, declarations: [ToastNoAnimation], imports: [CommonModule], exports: [ToastNoAnimation] });
-      ToastNoAnimationModule.\u0275inj = \u0275\u0275ngDeclareInjector({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastNoAnimationModule, imports: [[CommonModule]] });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.0.2", ngImport: core_exports, type: ToastNoAnimationModule, decorators: [{
-        type: NgModule,
-        args: [{
-          imports: [CommonModule],
-          declarations: [ToastNoAnimation],
-          exports: [ToastNoAnimation],
-          entryComponents: [ToastNoAnimation]
-        }]
-      }] });
-    }
-  });
-
-  // src/app/page/events-list/events-list.component.ts
-  var EventsListComponent;
-  var init_events_list_component2 = __esm({
-    "src/app/page/events-list/events-list.component.ts"() {
-      init_core();
-      init_events_list_component();
-      init_core();
-      init_event_service();
-      init_ngx_toastr();
-      EventsListComponent = class {
-        constructor(eventService, toastr) {
-          this.eventService = eventService;
-          this.toastr = toastr;
-          this.eventList$ = this.eventService.getAll();
-        }
-        ngOnInit() {
-        }
-        onDelete(event) {
-          let tmp = event;
-          this.eventService.remove(event).forEach((event2) => {
-            console.log("Event deleted:", tmp);
-            this.showDeleteSuccess(tmp);
-          });
-        }
-        showDeleteSuccess(event) {
-          let name = event.name;
-          this.toastr.success(name, "Removing success", { timeOut: 3e3 });
-          this.eventList$ = this.eventService.getAll();
-        }
-      };
-      EventsListComponent = __decorateClass([
-        Component({
-          selector: "app-events-list",
-          template: events_list_component_default || ""
-        }),
-        __decorateParam(0, Inject(EventService)),
-        __decorateParam(1, Inject(ToastrService))
-      ], EventsListComponent);
-    }
-  });
-
-  // node_modules/@angular/common/fesm2020/testing.mjs
-  function normalizeQueryParams2(params) {
-    return params && params[0] !== "?" ? "?" + params : params;
-  }
-  function parseUrl(urlStr, baseHref) {
-    const verifyProtocol = /^((http[s]?|ftp):\/\/)/;
-    let serverBase;
-    if (!verifyProtocol.test(urlStr)) {
-      serverBase = "http://empty.com/";
-    }
-    let parsedUrl;
-    try {
-      parsedUrl = new URL(urlStr, serverBase);
-    } catch (e) {
-      const result = urlParse.exec(serverBase || "" + urlStr);
-      if (!result) {
-        throw new Error(`Invalid URL: ${urlStr} with base: ${baseHref}`);
-      }
-      const hostSplit = result[4].split(":");
-      parsedUrl = {
-        protocol: result[1],
-        hostname: hostSplit[0],
-        port: hostSplit[1] || "",
-        pathname: result[5],
-        search: result[6],
-        hash: result[8]
-      };
-    }
-    if (parsedUrl.pathname && parsedUrl.pathname.indexOf(baseHref) === 0) {
-      parsedUrl.pathname = parsedUrl.pathname.substring(baseHref.length);
-    }
-    return {
-      hostname: !serverBase && parsedUrl.hostname || "",
-      protocol: !serverBase && parsedUrl.protocol || "",
-      port: !serverBase && parsedUrl.port || "",
-      pathname: parsedUrl.pathname || "/",
-      search: parsedUrl.search || "",
-      hash: parsedUrl.hash || ""
-    };
-  }
-  function scheduleMicroTask3(cb) {
-    Promise.resolve(null).then(cb);
-  }
-  var SpyLocation, LocationState, MockLocationStrategy, _MockPopStateEvent, urlParse, MOCK_PLATFORM_LOCATION_CONFIG, MockPlatformLocation;
-  var init_testing5 = __esm({
-    "node_modules/@angular/common/fesm2020/testing.mjs"() {
-      init_core();
-      init_core();
-      init_common();
-      init_esm5();
-      SpyLocation = class {
-        constructor() {
-          this.urlChanges = [];
-          this._history = [new LocationState("", "", null)];
-          this._historyIndex = 0;
-          this._subject = new EventEmitter();
-          this._baseHref = "";
-          this._platformStrategy = null;
-          this._platformLocation = null;
-          this._urlChangeListeners = [];
-        }
-        setInitialPath(url) {
-          this._history[this._historyIndex].path = url;
-        }
-        setBaseHref(url) {
-          this._baseHref = url;
-        }
-        path() {
-          return this._history[this._historyIndex].path;
-        }
-        getState() {
-          return this._history[this._historyIndex].state;
-        }
-        isCurrentPathEqualTo(path, query = "") {
-          const givenPath = path.endsWith("/") ? path.substring(0, path.length - 1) : path;
-          const currPath = this.path().endsWith("/") ? this.path().substring(0, this.path().length - 1) : this.path();
-          return currPath == givenPath + (query.length > 0 ? "?" + query : "");
-        }
-        simulateUrlPop(pathname) {
-          this._subject.emit({ "url": pathname, "pop": true, "type": "popstate" });
-        }
-        simulateHashChange(pathname) {
-          const path = this.prepareExternalUrl(pathname);
-          this.pushHistory(path, "", null);
-          this.urlChanges.push("hash: " + pathname);
-          this._subject.emit({ "url": pathname, "pop": true, "type": "popstate" });
-          this._subject.emit({ "url": pathname, "pop": true, "type": "hashchange" });
-        }
-        prepareExternalUrl(url) {
-          if (url.length > 0 && !url.startsWith("/")) {
-            url = "/" + url;
-          }
-          return this._baseHref + url;
-        }
-        go(path, query = "", state2 = null) {
-          path = this.prepareExternalUrl(path);
-          this.pushHistory(path, query, state2);
-          const locationState = this._history[this._historyIndex - 1];
-          if (locationState.path == path && locationState.query == query) {
-            return;
-          }
-          const url = path + (query.length > 0 ? "?" + query : "");
-          this.urlChanges.push(url);
-          this._notifyUrlChangeListeners(path + normalizeQueryParams2(query), state2);
-        }
-        replaceState(path, query = "", state2 = null) {
-          path = this.prepareExternalUrl(path);
-          const history = this._history[this._historyIndex];
-          if (history.path == path && history.query == query) {
-            return;
-          }
-          history.path = path;
-          history.query = query;
-          history.state = state2;
-          const url = path + (query.length > 0 ? "?" + query : "");
-          this.urlChanges.push("replace: " + url);
-          this._notifyUrlChangeListeners(path + normalizeQueryParams2(query), state2);
-        }
-        forward() {
-          if (this._historyIndex < this._history.length - 1) {
-            this._historyIndex++;
-            this._subject.emit({ "url": this.path(), "state": this.getState(), "pop": true, "type": "popstate" });
-          }
-        }
-        back() {
-          if (this._historyIndex > 0) {
-            this._historyIndex--;
-            this._subject.emit({ "url": this.path(), "state": this.getState(), "pop": true, "type": "popstate" });
-          }
-        }
-        historyGo(relativePosition = 0) {
-          const nextPageIndex = this._historyIndex + relativePosition;
-          if (nextPageIndex >= 0 && nextPageIndex < this._history.length) {
-            this._historyIndex = nextPageIndex;
-            this._subject.emit({ "url": this.path(), "state": this.getState(), "pop": true, "type": "popstate" });
-          }
-        }
-        onUrlChange(fn2) {
-          this._urlChangeListeners.push(fn2);
-          if (!this._urlChangeSubscription) {
-            this._urlChangeSubscription = this.subscribe((v) => {
-              this._notifyUrlChangeListeners(v.url, v.state);
-            });
-          }
-        }
-        _notifyUrlChangeListeners(url = "", state2) {
-          this._urlChangeListeners.forEach((fn2) => fn2(url, state2));
-        }
-        subscribe(onNext, onThrow, onReturn) {
-          return this._subject.subscribe({ next: onNext, error: onThrow, complete: onReturn });
-        }
-        normalize(url) {
-          return null;
-        }
-        pushHistory(path, query, state2) {
-          if (this._historyIndex > 0) {
-            this._history.splice(this._historyIndex + 1);
-          }
-          this._history.push(new LocationState(path, query, state2));
-          this._historyIndex = this._history.length - 1;
-        }
-      };
-      SpyLocation.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: SpyLocation, deps: [], target: FactoryTarget.Injectable });
-      SpyLocation.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: SpyLocation });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: SpyLocation, decorators: [{
-        type: Injectable
-      }] });
-      LocationState = class {
-        constructor(path, query, state2) {
-          this.path = path;
-          this.query = query;
-          this.state = state2;
-        }
-      };
-      MockLocationStrategy = class extends LocationStrategy {
-        constructor() {
-          super();
-          this.internalBaseHref = "/";
-          this.internalPath = "/";
-          this.internalTitle = "";
-          this.urlChanges = [];
-          this._subject = new EventEmitter();
-          this.stateChanges = [];
-        }
-        simulatePopState(url) {
-          this.internalPath = url;
-          this._subject.emit(new _MockPopStateEvent(this.path()));
-        }
-        path(includeHash = false) {
-          return this.internalPath;
-        }
-        prepareExternalUrl(internal) {
-          if (internal.startsWith("/") && this.internalBaseHref.endsWith("/")) {
-            return this.internalBaseHref + internal.substring(1);
-          }
-          return this.internalBaseHref + internal;
-        }
-        pushState(ctx, title, path, query) {
-          this.stateChanges.push(ctx);
-          this.internalTitle = title;
-          const url = path + (query.length > 0 ? "?" + query : "");
-          this.internalPath = url;
-          const externalUrl = this.prepareExternalUrl(url);
-          this.urlChanges.push(externalUrl);
-        }
-        replaceState(ctx, title, path, query) {
-          this.stateChanges[(this.stateChanges.length || 1) - 1] = ctx;
-          this.internalTitle = title;
-          const url = path + (query.length > 0 ? "?" + query : "");
-          this.internalPath = url;
-          const externalUrl = this.prepareExternalUrl(url);
-          this.urlChanges.push("replace: " + externalUrl);
-        }
-        onPopState(fn2) {
-          this._subject.subscribe({ next: fn2 });
-        }
-        getBaseHref() {
-          return this.internalBaseHref;
-        }
-        back() {
-          if (this.urlChanges.length > 0) {
-            this.urlChanges.pop();
-            this.stateChanges.pop();
-            const nextUrl = this.urlChanges.length > 0 ? this.urlChanges[this.urlChanges.length - 1] : "";
-            this.simulatePopState(nextUrl);
-          }
-        }
-        forward() {
-          throw "not implemented";
-        }
-        getState() {
-          return this.stateChanges[(this.stateChanges.length || 1) - 1];
-        }
-      };
-      MockLocationStrategy.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockLocationStrategy, deps: [], target: FactoryTarget.Injectable });
-      MockLocationStrategy.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockLocationStrategy });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockLocationStrategy, decorators: [{
-        type: Injectable
-      }], ctorParameters: function() {
-        return [];
-      } });
-      _MockPopStateEvent = class {
-        constructor(newUrl) {
-          this.newUrl = newUrl;
-          this.pop = true;
-          this.type = "popstate";
-        }
-      };
-      urlParse = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
-      MOCK_PLATFORM_LOCATION_CONFIG = new InjectionToken("MOCK_PLATFORM_LOCATION_CONFIG");
-      MockPlatformLocation = class {
-        constructor(config2) {
-          this.baseHref = "";
-          this.hashUpdate = new Subject();
-          this.urlChangeIndex = 0;
-          this.urlChanges = [{ hostname: "", protocol: "", port: "", pathname: "/", search: "", hash: "", state: null }];
-          if (config2) {
-            this.baseHref = config2.appBaseHref || "";
-            const parsedChanges = this.parseChanges(null, config2.startUrl || "http://_empty_/", this.baseHref);
-            this.urlChanges[0] = { ...parsedChanges };
-          }
-        }
-        get hostname() {
-          return this.urlChanges[this.urlChangeIndex].hostname;
-        }
-        get protocol() {
-          return this.urlChanges[this.urlChangeIndex].protocol;
-        }
-        get port() {
-          return this.urlChanges[this.urlChangeIndex].port;
-        }
-        get pathname() {
-          return this.urlChanges[this.urlChangeIndex].pathname;
-        }
-        get search() {
-          return this.urlChanges[this.urlChangeIndex].search;
-        }
-        get hash() {
-          return this.urlChanges[this.urlChangeIndex].hash;
-        }
-        get state() {
-          return this.urlChanges[this.urlChangeIndex].state;
-        }
-        getBaseHrefFromDOM() {
-          return this.baseHref;
-        }
-        onPopState(fn2) {
-          return () => {
-          };
-        }
-        onHashChange(fn2) {
-          const subscription = this.hashUpdate.subscribe(fn2);
-          return () => subscription.unsubscribe();
-        }
-        get href() {
-          let url = `${this.protocol}//${this.hostname}${this.port ? ":" + this.port : ""}`;
-          url += `${this.pathname === "/" ? "" : this.pathname}${this.search}${this.hash}`;
-          return url;
-        }
-        get url() {
-          return `${this.pathname}${this.search}${this.hash}`;
-        }
-        parseChanges(state2, url, baseHref = "") {
-          state2 = JSON.parse(JSON.stringify(state2));
-          return { ...parseUrl(url, baseHref), state: state2 };
-        }
-        replaceState(state2, title, newUrl) {
-          const { pathname, search, state: parsedState, hash } = this.parseChanges(state2, newUrl);
-          this.urlChanges[this.urlChangeIndex] = { ...this.urlChanges[this.urlChangeIndex], pathname, search, hash, state: parsedState };
-        }
-        pushState(state2, title, newUrl) {
-          const { pathname, search, state: parsedState, hash } = this.parseChanges(state2, newUrl);
-          if (this.urlChangeIndex > 0) {
-            this.urlChanges.splice(this.urlChangeIndex + 1);
-          }
-          this.urlChanges.push({ ...this.urlChanges[this.urlChangeIndex], pathname, search, hash, state: parsedState });
-          this.urlChangeIndex = this.urlChanges.length - 1;
-        }
-        forward() {
-          const oldUrl = this.url;
-          const oldHash = this.hash;
-          if (this.urlChangeIndex < this.urlChanges.length) {
-            this.urlChangeIndex++;
-          }
-          this.scheduleHashUpdate(oldHash, oldUrl);
-        }
-        back() {
-          const oldUrl = this.url;
-          const oldHash = this.hash;
-          if (this.urlChangeIndex > 0) {
-            this.urlChangeIndex--;
-          }
-          this.scheduleHashUpdate(oldHash, oldUrl);
-        }
-        historyGo(relativePosition = 0) {
-          const oldUrl = this.url;
-          const oldHash = this.hash;
-          const nextPageIndex = this.urlChangeIndex + relativePosition;
-          if (nextPageIndex >= 0 && nextPageIndex < this.urlChanges.length) {
-            this.urlChangeIndex = nextPageIndex;
-          }
-          this.scheduleHashUpdate(oldHash, oldUrl);
-        }
-        getState() {
-          return this.state;
-        }
-        scheduleHashUpdate(oldHash, oldUrl) {
-          if (oldHash !== this.hash) {
-            scheduleMicroTask3(() => this.hashUpdate.next({ type: "hashchange", state: null, oldUrl, newUrl: this.url }));
-          }
-        }
-      };
-      MockPlatformLocation.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockPlatformLocation, deps: [{ token: MOCK_PLATFORM_LOCATION_CONFIG, optional: true }], target: FactoryTarget.Injectable });
-      MockPlatformLocation.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockPlatformLocation });
-      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockPlatformLocation, decorators: [{
-        type: Injectable
-      }], ctorParameters: function() {
-        return [{ type: void 0, decorators: [{
-          type: Inject,
-          args: [MOCK_PLATFORM_LOCATION_CONFIG]
-        }, {
-          type: Optional
-        }] }];
-      } });
     }
   });
 
@@ -45127,9 +43704,9 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
       return { params, data, resolve };
     }, { params: {}, data: {}, resolve: {} });
   }
-  function setRouterState(state2, node) {
-    node.value._routerState = state2;
-    node.children.forEach((c) => setRouterState(state2, c));
+  function setRouterState(state, node) {
+    node.value._routerState = state;
+    node.children.forEach((c) => setRouterState(state, c));
   }
   function serializeNode(node) {
     const c = node.children.length > 0 ? ` { ${node.children.map(serializeNode).join(", ")} } ` : "";
@@ -46245,30 +44822,30 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         }
       };
       RoutesRecognized = class extends RouterEvent {
-        constructor(id, url, urlAfterRedirects, state2) {
+        constructor(id, url, urlAfterRedirects, state) {
           super(id, url);
           this.urlAfterRedirects = urlAfterRedirects;
-          this.state = state2;
+          this.state = state;
         }
         toString() {
           return `RoutesRecognized(id: ${this.id}, url: '${this.url}', urlAfterRedirects: '${this.urlAfterRedirects}', state: ${this.state})`;
         }
       };
       GuardsCheckStart = class extends RouterEvent {
-        constructor(id, url, urlAfterRedirects, state2) {
+        constructor(id, url, urlAfterRedirects, state) {
           super(id, url);
           this.urlAfterRedirects = urlAfterRedirects;
-          this.state = state2;
+          this.state = state;
         }
         toString() {
           return `GuardsCheckStart(id: ${this.id}, url: '${this.url}', urlAfterRedirects: '${this.urlAfterRedirects}', state: ${this.state})`;
         }
       };
       GuardsCheckEnd = class extends RouterEvent {
-        constructor(id, url, urlAfterRedirects, state2, shouldActivate) {
+        constructor(id, url, urlAfterRedirects, state, shouldActivate) {
           super(id, url);
           this.urlAfterRedirects = urlAfterRedirects;
-          this.state = state2;
+          this.state = state;
           this.shouldActivate = shouldActivate;
         }
         toString() {
@@ -46276,20 +44853,20 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         }
       };
       ResolveStart = class extends RouterEvent {
-        constructor(id, url, urlAfterRedirects, state2) {
+        constructor(id, url, urlAfterRedirects, state) {
           super(id, url);
           this.urlAfterRedirects = urlAfterRedirects;
-          this.state = state2;
+          this.state = state;
         }
         toString() {
           return `ResolveStart(id: ${this.id}, url: '${this.url}', urlAfterRedirects: '${this.urlAfterRedirects}', state: ${this.state})`;
         }
       };
       ResolveEnd = class extends RouterEvent {
-        constructor(id, url, urlAfterRedirects, state2) {
+        constructor(id, url, urlAfterRedirects, state) {
           super(id, url);
           this.urlAfterRedirects = urlAfterRedirects;
-          this.state = state2;
+          this.state = state;
         }
         toString() {
           return `ResolveEnd(id: ${this.id}, url: '${this.url}', urlAfterRedirects: '${this.urlAfterRedirects}', state: ${this.state})`;
@@ -47680,9 +46257,9 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
                   this.browserUrlTree = t2.extractedUrl;
                 }
                 return of(t2).pipe(switchMap((t3) => {
-                  const transition2 = this.transitions.getValue();
+                  const transition = this.transitions.getValue();
                   eventsSubject.next(new NavigationStart(t3.id, this.serializeUrl(t3.extractedUrl), t3.source, t3.restoredState));
-                  if (transition2 !== this.transitions.getValue()) {
+                  if (transition !== this.transitions.getValue()) {
                     return EMPTY;
                   }
                   return Promise.resolve(t3);
@@ -47866,9 +46443,9 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
               if (source === "popstate") {
                 setTimeout(() => {
                   const extras = { replaceUrl: true };
-                  const state2 = event.state?.navigationId ? event.state : null;
-                  if (state2) {
-                    const stateCopy = { ...state2 };
+                  const state = event.state?.navigationId ? event.state : null;
+                  if (state) {
+                    const stateCopy = { ...state };
                     delete stateCopy.navigationId;
                     delete stateCopy.\u0275routerPageId;
                     if (Object.keys(stateCopy).length !== 0) {
@@ -47876,7 +46453,7 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
                     }
                   }
                   const urlTree = this.parseUrl(event["url"]);
-                  this.scheduleNavigation(urlTree, source, state2, extras);
+                  this.scheduleNavigation(urlTree, source, state, extras);
                 }, 0);
               }
             });
@@ -48055,11 +46632,11 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
         }
         setBrowserUrl(url, t) {
           const path = this.urlSerializer.serialize(url);
-          const state2 = { ...t.extras.state, ...this.generateNgRouterState(t.id, t.targetPageId) };
+          const state = { ...t.extras.state, ...this.generateNgRouterState(t.id, t.targetPageId) };
           if (this.location.isCurrentPathEqualTo(path) || !!t.extras.replaceUrl) {
-            this.location.replaceState(path, "", state2);
+            this.location.replaceState(path, "", state);
           } else {
-            this.location.go(path, "", state2);
+            this.location.go(path, "", state);
           }
         }
         restoreHistory(t, restoringFromCaughtError = false) {
@@ -48685,6 +47262,405 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
       } });
       ROUTER_INITIALIZER = new InjectionToken("Router Initializer");
       VERSION6 = new Version("13.1.3");
+    }
+  });
+
+  // src/app/page/events-list/events-list.component.ts
+  var EventsListComponent;
+  var init_events_list_component2 = __esm({
+    "src/app/page/events-list/events-list.component.ts"() {
+      init_core();
+      init_events_list_component();
+      init_core();
+      init_router();
+      init_event_service();
+      EventsListComponent = class {
+        constructor(eventService, router) {
+          this.eventService = eventService;
+          this.router = router;
+          this.eventList$ = this.eventService.getAll();
+        }
+        ngOnInit() {
+        }
+        onDelete(event) {
+          this.eventService.remove(event);
+        }
+      };
+      EventsListComponent = __decorateClass([
+        Component({
+          selector: "app-events-list",
+          template: events_list_component_default || ""
+        }),
+        __decorateParam(0, Inject(EventService)),
+        __decorateParam(1, Inject(Router))
+      ], EventsListComponent);
+    }
+  });
+
+  // node_modules/@angular/common/fesm2020/testing.mjs
+  function normalizeQueryParams2(params) {
+    return params && params[0] !== "?" ? "?" + params : params;
+  }
+  function parseUrl(urlStr, baseHref) {
+    const verifyProtocol = /^((http[s]?|ftp):\/\/)/;
+    let serverBase;
+    if (!verifyProtocol.test(urlStr)) {
+      serverBase = "http://empty.com/";
+    }
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(urlStr, serverBase);
+    } catch (e) {
+      const result = urlParse.exec(serverBase || "" + urlStr);
+      if (!result) {
+        throw new Error(`Invalid URL: ${urlStr} with base: ${baseHref}`);
+      }
+      const hostSplit = result[4].split(":");
+      parsedUrl = {
+        protocol: result[1],
+        hostname: hostSplit[0],
+        port: hostSplit[1] || "",
+        pathname: result[5],
+        search: result[6],
+        hash: result[8]
+      };
+    }
+    if (parsedUrl.pathname && parsedUrl.pathname.indexOf(baseHref) === 0) {
+      parsedUrl.pathname = parsedUrl.pathname.substring(baseHref.length);
+    }
+    return {
+      hostname: !serverBase && parsedUrl.hostname || "",
+      protocol: !serverBase && parsedUrl.protocol || "",
+      port: !serverBase && parsedUrl.port || "",
+      pathname: parsedUrl.pathname || "/",
+      search: parsedUrl.search || "",
+      hash: parsedUrl.hash || ""
+    };
+  }
+  function scheduleMicroTask3(cb) {
+    Promise.resolve(null).then(cb);
+  }
+  var SpyLocation, LocationState, MockLocationStrategy, _MockPopStateEvent, urlParse, MOCK_PLATFORM_LOCATION_CONFIG, MockPlatformLocation;
+  var init_testing5 = __esm({
+    "node_modules/@angular/common/fesm2020/testing.mjs"() {
+      init_core();
+      init_core();
+      init_common();
+      init_esm5();
+      SpyLocation = class {
+        constructor() {
+          this.urlChanges = [];
+          this._history = [new LocationState("", "", null)];
+          this._historyIndex = 0;
+          this._subject = new EventEmitter();
+          this._baseHref = "";
+          this._platformStrategy = null;
+          this._platformLocation = null;
+          this._urlChangeListeners = [];
+        }
+        setInitialPath(url) {
+          this._history[this._historyIndex].path = url;
+        }
+        setBaseHref(url) {
+          this._baseHref = url;
+        }
+        path() {
+          return this._history[this._historyIndex].path;
+        }
+        getState() {
+          return this._history[this._historyIndex].state;
+        }
+        isCurrentPathEqualTo(path, query = "") {
+          const givenPath = path.endsWith("/") ? path.substring(0, path.length - 1) : path;
+          const currPath = this.path().endsWith("/") ? this.path().substring(0, this.path().length - 1) : this.path();
+          return currPath == givenPath + (query.length > 0 ? "?" + query : "");
+        }
+        simulateUrlPop(pathname) {
+          this._subject.emit({ "url": pathname, "pop": true, "type": "popstate" });
+        }
+        simulateHashChange(pathname) {
+          const path = this.prepareExternalUrl(pathname);
+          this.pushHistory(path, "", null);
+          this.urlChanges.push("hash: " + pathname);
+          this._subject.emit({ "url": pathname, "pop": true, "type": "popstate" });
+          this._subject.emit({ "url": pathname, "pop": true, "type": "hashchange" });
+        }
+        prepareExternalUrl(url) {
+          if (url.length > 0 && !url.startsWith("/")) {
+            url = "/" + url;
+          }
+          return this._baseHref + url;
+        }
+        go(path, query = "", state = null) {
+          path = this.prepareExternalUrl(path);
+          this.pushHistory(path, query, state);
+          const locationState = this._history[this._historyIndex - 1];
+          if (locationState.path == path && locationState.query == query) {
+            return;
+          }
+          const url = path + (query.length > 0 ? "?" + query : "");
+          this.urlChanges.push(url);
+          this._notifyUrlChangeListeners(path + normalizeQueryParams2(query), state);
+        }
+        replaceState(path, query = "", state = null) {
+          path = this.prepareExternalUrl(path);
+          const history = this._history[this._historyIndex];
+          if (history.path == path && history.query == query) {
+            return;
+          }
+          history.path = path;
+          history.query = query;
+          history.state = state;
+          const url = path + (query.length > 0 ? "?" + query : "");
+          this.urlChanges.push("replace: " + url);
+          this._notifyUrlChangeListeners(path + normalizeQueryParams2(query), state);
+        }
+        forward() {
+          if (this._historyIndex < this._history.length - 1) {
+            this._historyIndex++;
+            this._subject.emit({ "url": this.path(), "state": this.getState(), "pop": true, "type": "popstate" });
+          }
+        }
+        back() {
+          if (this._historyIndex > 0) {
+            this._historyIndex--;
+            this._subject.emit({ "url": this.path(), "state": this.getState(), "pop": true, "type": "popstate" });
+          }
+        }
+        historyGo(relativePosition = 0) {
+          const nextPageIndex = this._historyIndex + relativePosition;
+          if (nextPageIndex >= 0 && nextPageIndex < this._history.length) {
+            this._historyIndex = nextPageIndex;
+            this._subject.emit({ "url": this.path(), "state": this.getState(), "pop": true, "type": "popstate" });
+          }
+        }
+        onUrlChange(fn2) {
+          this._urlChangeListeners.push(fn2);
+          if (!this._urlChangeSubscription) {
+            this._urlChangeSubscription = this.subscribe((v) => {
+              this._notifyUrlChangeListeners(v.url, v.state);
+            });
+          }
+        }
+        _notifyUrlChangeListeners(url = "", state) {
+          this._urlChangeListeners.forEach((fn2) => fn2(url, state));
+        }
+        subscribe(onNext, onThrow, onReturn) {
+          return this._subject.subscribe({ next: onNext, error: onThrow, complete: onReturn });
+        }
+        normalize(url) {
+          return null;
+        }
+        pushHistory(path, query, state) {
+          if (this._historyIndex > 0) {
+            this._history.splice(this._historyIndex + 1);
+          }
+          this._history.push(new LocationState(path, query, state));
+          this._historyIndex = this._history.length - 1;
+        }
+      };
+      SpyLocation.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: SpyLocation, deps: [], target: FactoryTarget.Injectable });
+      SpyLocation.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: SpyLocation });
+      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: SpyLocation, decorators: [{
+        type: Injectable
+      }] });
+      LocationState = class {
+        constructor(path, query, state) {
+          this.path = path;
+          this.query = query;
+          this.state = state;
+        }
+      };
+      MockLocationStrategy = class extends LocationStrategy {
+        constructor() {
+          super();
+          this.internalBaseHref = "/";
+          this.internalPath = "/";
+          this.internalTitle = "";
+          this.urlChanges = [];
+          this._subject = new EventEmitter();
+          this.stateChanges = [];
+        }
+        simulatePopState(url) {
+          this.internalPath = url;
+          this._subject.emit(new _MockPopStateEvent(this.path()));
+        }
+        path(includeHash = false) {
+          return this.internalPath;
+        }
+        prepareExternalUrl(internal) {
+          if (internal.startsWith("/") && this.internalBaseHref.endsWith("/")) {
+            return this.internalBaseHref + internal.substring(1);
+          }
+          return this.internalBaseHref + internal;
+        }
+        pushState(ctx, title, path, query) {
+          this.stateChanges.push(ctx);
+          this.internalTitle = title;
+          const url = path + (query.length > 0 ? "?" + query : "");
+          this.internalPath = url;
+          const externalUrl = this.prepareExternalUrl(url);
+          this.urlChanges.push(externalUrl);
+        }
+        replaceState(ctx, title, path, query) {
+          this.stateChanges[(this.stateChanges.length || 1) - 1] = ctx;
+          this.internalTitle = title;
+          const url = path + (query.length > 0 ? "?" + query : "");
+          this.internalPath = url;
+          const externalUrl = this.prepareExternalUrl(url);
+          this.urlChanges.push("replace: " + externalUrl);
+        }
+        onPopState(fn2) {
+          this._subject.subscribe({ next: fn2 });
+        }
+        getBaseHref() {
+          return this.internalBaseHref;
+        }
+        back() {
+          if (this.urlChanges.length > 0) {
+            this.urlChanges.pop();
+            this.stateChanges.pop();
+            const nextUrl = this.urlChanges.length > 0 ? this.urlChanges[this.urlChanges.length - 1] : "";
+            this.simulatePopState(nextUrl);
+          }
+        }
+        forward() {
+          throw "not implemented";
+        }
+        getState() {
+          return this.stateChanges[(this.stateChanges.length || 1) - 1];
+        }
+      };
+      MockLocationStrategy.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockLocationStrategy, deps: [], target: FactoryTarget.Injectable });
+      MockLocationStrategy.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockLocationStrategy });
+      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockLocationStrategy, decorators: [{
+        type: Injectable
+      }], ctorParameters: function() {
+        return [];
+      } });
+      _MockPopStateEvent = class {
+        constructor(newUrl) {
+          this.newUrl = newUrl;
+          this.pop = true;
+          this.type = "popstate";
+        }
+      };
+      urlParse = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
+      MOCK_PLATFORM_LOCATION_CONFIG = new InjectionToken("MOCK_PLATFORM_LOCATION_CONFIG");
+      MockPlatformLocation = class {
+        constructor(config2) {
+          this.baseHref = "";
+          this.hashUpdate = new Subject();
+          this.urlChangeIndex = 0;
+          this.urlChanges = [{ hostname: "", protocol: "", port: "", pathname: "/", search: "", hash: "", state: null }];
+          if (config2) {
+            this.baseHref = config2.appBaseHref || "";
+            const parsedChanges = this.parseChanges(null, config2.startUrl || "http://_empty_/", this.baseHref);
+            this.urlChanges[0] = { ...parsedChanges };
+          }
+        }
+        get hostname() {
+          return this.urlChanges[this.urlChangeIndex].hostname;
+        }
+        get protocol() {
+          return this.urlChanges[this.urlChangeIndex].protocol;
+        }
+        get port() {
+          return this.urlChanges[this.urlChangeIndex].port;
+        }
+        get pathname() {
+          return this.urlChanges[this.urlChangeIndex].pathname;
+        }
+        get search() {
+          return this.urlChanges[this.urlChangeIndex].search;
+        }
+        get hash() {
+          return this.urlChanges[this.urlChangeIndex].hash;
+        }
+        get state() {
+          return this.urlChanges[this.urlChangeIndex].state;
+        }
+        getBaseHrefFromDOM() {
+          return this.baseHref;
+        }
+        onPopState(fn2) {
+          return () => {
+          };
+        }
+        onHashChange(fn2) {
+          const subscription = this.hashUpdate.subscribe(fn2);
+          return () => subscription.unsubscribe();
+        }
+        get href() {
+          let url = `${this.protocol}//${this.hostname}${this.port ? ":" + this.port : ""}`;
+          url += `${this.pathname === "/" ? "" : this.pathname}${this.search}${this.hash}`;
+          return url;
+        }
+        get url() {
+          return `${this.pathname}${this.search}${this.hash}`;
+        }
+        parseChanges(state, url, baseHref = "") {
+          state = JSON.parse(JSON.stringify(state));
+          return { ...parseUrl(url, baseHref), state };
+        }
+        replaceState(state, title, newUrl) {
+          const { pathname, search, state: parsedState, hash } = this.parseChanges(state, newUrl);
+          this.urlChanges[this.urlChangeIndex] = { ...this.urlChanges[this.urlChangeIndex], pathname, search, hash, state: parsedState };
+        }
+        pushState(state, title, newUrl) {
+          const { pathname, search, state: parsedState, hash } = this.parseChanges(state, newUrl);
+          if (this.urlChangeIndex > 0) {
+            this.urlChanges.splice(this.urlChangeIndex + 1);
+          }
+          this.urlChanges.push({ ...this.urlChanges[this.urlChangeIndex], pathname, search, hash, state: parsedState });
+          this.urlChangeIndex = this.urlChanges.length - 1;
+        }
+        forward() {
+          const oldUrl = this.url;
+          const oldHash = this.hash;
+          if (this.urlChangeIndex < this.urlChanges.length) {
+            this.urlChangeIndex++;
+          }
+          this.scheduleHashUpdate(oldHash, oldUrl);
+        }
+        back() {
+          const oldUrl = this.url;
+          const oldHash = this.hash;
+          if (this.urlChangeIndex > 0) {
+            this.urlChangeIndex--;
+          }
+          this.scheduleHashUpdate(oldHash, oldUrl);
+        }
+        historyGo(relativePosition = 0) {
+          const oldUrl = this.url;
+          const oldHash = this.hash;
+          const nextPageIndex = this.urlChangeIndex + relativePosition;
+          if (nextPageIndex >= 0 && nextPageIndex < this.urlChanges.length) {
+            this.urlChangeIndex = nextPageIndex;
+          }
+          this.scheduleHashUpdate(oldHash, oldUrl);
+        }
+        getState() {
+          return this.state;
+        }
+        scheduleHashUpdate(oldHash, oldUrl) {
+          if (oldHash !== this.hash) {
+            scheduleMicroTask3(() => this.hashUpdate.next({ type: "hashchange", state: null, oldUrl, newUrl: this.url }));
+          }
+        }
+      };
+      MockPlatformLocation.\u0275fac = \u0275\u0275ngDeclareFactory({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockPlatformLocation, deps: [{ token: MOCK_PLATFORM_LOCATION_CONFIG, optional: true }], target: FactoryTarget.Injectable });
+      MockPlatformLocation.\u0275prov = \u0275\u0275ngDeclareInjectable({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockPlatformLocation });
+      \u0275\u0275ngDeclareClassMetadata({ minVersion: "12.0.0", version: "13.1.3", ngImport: core_exports, type: MockPlatformLocation, decorators: [{
+        type: Injectable
+      }], ctorParameters: function() {
+        return [{ type: void 0, decorators: [{
+          type: Inject,
+          args: [MOCK_PLATFORM_LOCATION_CONFIG]
+        }, {
+          type: Optional
+        }] }];
+      } });
     }
   });
 

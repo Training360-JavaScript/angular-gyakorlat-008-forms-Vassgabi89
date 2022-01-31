@@ -18,7 +18,7 @@ import { EventEditorComponent } from './page/event-editor/event-editor.component
     AppComponent,
     EventsListComponent,
     NavigationComponent,
-    EventEditorComponent
+    EventEditorComponent,
   ],
   imports: [
     BrowserModule,
