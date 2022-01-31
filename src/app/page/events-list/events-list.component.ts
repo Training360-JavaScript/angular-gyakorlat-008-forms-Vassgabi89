@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { Event } from 'src/app/model/event';
 import { EventService } from 'src/app/service/event.service';
 
+import { ToastrService } from 'ngx-toastr'
+
 @Component({
   selector: 'app-events-list',
   templateUrl: './events-list.component.html',
@@ -15,9 +17,23 @@ export class EventsListComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
-    private router: Router,
+    private toastr: ToastrService
   ) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
+
+  onDelete(event: Event): void {
+    let tmp = event
+    this.eventService.remove(event).forEach(event => {
+      console.log('Event deleted:', tmp)
+      this.showDeleteSuccess(tmp)
+    })
+  }
+
+  showDeleteSuccess(event: Event) {
+    let name = event.name
+    this.toastr.success(name, 'Removing success', {timeOut: 3000})
+    this.eventList$ = this.eventService.getAll()
+  }
 
 }

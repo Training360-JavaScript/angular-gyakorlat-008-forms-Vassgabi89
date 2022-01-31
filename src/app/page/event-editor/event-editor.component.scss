@@ -1,0 +1,10 @@
+.error-message {
+  color: red;
+  animation-name: error;
+  animation-duration: 1s;
+}
+
+@keyframes error {
+  from {background-color: red;}
+  to {background-color: none;}
+}
