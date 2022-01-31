@@ -51068,14 +51068,12 @@ If '${name}' is a directive input, make sure the directive is imported by the cu
       init_router();
       init_operators();
       init_event_service();
-      init_event();
       EventEditorComponent = class {
         constructor(activatedRoute, eventService, router) {
           this.activatedRoute = activatedRoute;
           this.eventService = eventService;
           this.router = router;
           this.event$ = this.activatedRoute.params.pipe(switchMap((params) => this.eventService.get(params["id"])));
-          this.newEvent = new Event();
         }
         ngOnInit() {
         }

@@ -21,7 +21,7 @@
         <label for="">Time</label>
         <input name="time" [(ngModel)]="event.time" type="text" class="form-control" required pattern="^(0?[1-9]|1[0-2]):([0-5]\d)\s?((?:A|P)\.?M\.?)$">
         <div [hidden]="eventForm.controls['time']?.valid" class="error-message">
-          The time of the event must be 00am/00pm format.
+          The time of the event must be 11:59 AM/PM format.
         </div>
       </div>
       <div class="form-group">
@@ -31,8 +31,7 @@
           The location of the event must be 5-25 character long and start with capital letter.
         </div>
       </div>
-
-      <button type="submit" class="btn btn-primary btn-block btn-lg">
+      <button [disabled]="eventForm.invalid || saved" type="submit" class="btn btn-primary btn-block btn-lg">
         <i class="fa fa-save"></i>
       </button>
     </form>

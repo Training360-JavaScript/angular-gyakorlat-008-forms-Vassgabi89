@@ -6,8 +6,7 @@ export const environment = {
   production: false
 };
 
-export const eventsUrl: string = 'https://nettuts.hu/jms/feladat/events'
-//export const eventsUrl: string = 'http://localhost:3000/events'
+export const eventsUrl: string = 'http://localhost:3000/events'
 
 /*
  * For easier debugging in development mode, you can import the following file
